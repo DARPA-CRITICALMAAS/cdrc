@@ -73,9 +73,9 @@ Parameters:
 
 **validated**: Return validated features or not validated. None will return both validated and not validated features.
 
-**search_text**: string to be searched over the Legend description/label/abbreviation fields.
+**search_text**: String to be searched over the Legend description/label/abbreviation fields.
 
-**intersect_polygon**: geojson polygon to intersect over the features. EPSG:4326
+**intersect_polygon**: Geojson polygon to intersect over the features. EPSG:4326
 
 ```
 cog_ids = ["specify list of cogs you want","..."]
