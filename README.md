@@ -53,7 +53,7 @@ system_version = "0.0.1"
 client.build_cog_geopackages(
     cog_id=cog_id,
     feature_types=['polygon', 'point', 'line'],
-    system_versions=[(system, system_verison)],
+    system_versions=[(system, system_version)],
     validated=None
 )
 ```
@@ -83,7 +83,7 @@ cog_ids = ["specify list of cogs you want","..."]
 client.build_cma_geopackages(
     cog_ids=cog_ids,
     feature_type='line',
-    system_versions=[(system, system_verison)],
+    system_versions=[(system, system_version)],
     validated=None,
     search_text="",
     intersect_polygon= { 
