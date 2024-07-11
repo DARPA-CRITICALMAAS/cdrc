@@ -67,7 +67,7 @@ class CDRClient:
             "legend_ids": [],
             "intersect_polygon": intersect_polygon,
             "page": 0,
-            "size": 500,
+            "size": 5000,
         }
         validated_payload = FeatureSearchIntersect(**payload).model_dump()
         all_data = []
@@ -286,7 +286,7 @@ class CDRClient:
                 data = resp.json()
                 if data.get("download_url"):
                     url_ = self.cog_url + quote(
-                        f"/test/cogs/{cog_id}/{data.get("system")}/{data.get("system_version")}/{self.projection_id}"
+                        f"/test/cogs/{cog_id}/{data.get('system')}/{data.get('system_version')}/{self.projection_id}"
                     )
                     r = httpx.get(url_)
                     if r.status_code != 200:
