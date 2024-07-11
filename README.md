@@ -69,7 +69,7 @@ intersect_polygon: geojson polygon to intersect over the features. EPSG:4326
 ```
 cog_ids = ["specify list of cogs you want","..."]
 
-client.build_cog_geopackages(
+client.build_cma_geopackages(
     cog_ids=cog_ids,
     feature_type='line',
     system_versions=[(system, system_verison)],
