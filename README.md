@@ -36,10 +36,14 @@ If you want to view data for a specific cog you can use the client.build_cog_geo
 This query can return a lot of data and take a long time to complete so if you only care about certain feature types or data from specific system/versions those should be set. 
 
 Parameters:
-cog_id: Cog that you want results for.
-feature_types: Provide an array of the features you want. Options are line, point, polygon.
-system_versions: An array of tuples with system and system_version. An empty array will return results from all systems
-validated: Return validated features or not validated. None will return both validated and not validated features/legend_items.
+
+**cog_id**: Cog id.
+
+**feature_types**: An array of the features you want. Options are: line, point, polygon.
+
+**system_versions**: An array of tuples with system and system_version. An empty array will return results from all systems.
+
+**validated**: Return validated features or not validated. None will return both validated and not validated features/legend_items.
 
 ```
 cog_id = "specify what cog you want"
@@ -60,12 +64,19 @@ If you want to view data for a specific CMA area you can use the client.build_cm
 This query can return a lot of data and take a long time to complete so if you only care about certain feature types or data from specific system/versions those should be set. 
 
 Parameters:
-cog_ids: List of cog ids that you want results for.
-feature_type: Provide an the type of feature you want. Options are line, point, polygon.
-system_versions: An array of tuples with system and system_version. An empty array will return results from all systems
-validated: Return validated features or not validated. None will return both validated and not validated features.
-search_text: string to be searched over the Legend description/label/abbreviation fields.
-intersect_polygon: geojson polygon to intersect over the features. EPSG:4326
+
+**cog_ids**: List of cog ids that you want results for.
+
+**feature_type**: Provide an the type of feature you want. Options are line, point, polygon.
+
+**system_versions**: An array of tuples with system and system_version. An empty array will return results from all systems
+
+**validated**: Return validated features or not validated. None will return both validated and not validated features.
+
+**search_text**: string to be searched over the Legend description/label/abbreviation fields.
+
+**intersect_polygon**: geojson polygon to intersect over the features. EPSG:4326
+
 ```
 cog_ids = ["specify list of cogs you want","..."]
 
