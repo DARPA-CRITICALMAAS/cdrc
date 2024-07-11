@@ -77,6 +77,8 @@ Parameters:
 
 **intersect_polygon**: Geojson polygon to intersect over the features. EPSG:4326
 
+**cma_name**: Name of the output folder for this search. 
+
 ```
 cog_ids = ["specify list of cogs you want","..."]
 
@@ -98,7 +100,8 @@ client.build_cma_geopackages(
                 [-94.23558192118045, 48.0] 
             ]
         ] 
-        }
+        },
+    cma_name="cma_test"
 )
 ```
 
