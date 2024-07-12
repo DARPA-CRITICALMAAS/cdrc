@@ -120,10 +120,10 @@ class CDRClient:
             }
 
             obj = {"type": "FeatureCollection", "features": [legend_contour_feature]}
-            thing = label[:10] + "__" + abbreviation[:10]
+            thing = label[:20] + "__" + abbreviation[:20]
             thing = thing.strip().lower()
             if thing == "__":
-                thing = legend_features.get("description", "")[:10]
+                thing = legend_features.get("description", "")[:20]
                 thing = re.sub(r"\s+", "", thing).lower()
 
             with open(
@@ -174,11 +174,11 @@ class CDRClient:
                 print("Feature is not georeferenced in the cdr")
 
         px_obj = {"type": "FeatureCollection", "features": pixel_features}
-        thing = label[:10] + "__" + abbreviation[:10]
+        thing = label[:20] + "__" + abbreviation[:20]
         thing = thing.strip().lower()
 
         if thing == "__":
-            thing = description[:10]
+            thing = description[:20]
             thing = re.sub(r"\s+", "", thing).lower()
 
         with open(
