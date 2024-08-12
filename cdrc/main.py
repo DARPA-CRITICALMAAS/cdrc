@@ -7,7 +7,7 @@ from urllib.parse import quote
 import geopandas
 import httpx
 
-from cdrc.common import get_projection_id, return_properties
+from cdrc.common import get_projection_id, inverse_geojson, return_properties, save_stripped_file
 from cdrc.schemas import FeatureSearchByCog, FeatureSearchIntersect
 
 
@@ -100,7 +100,7 @@ class CDRClient:
             category = legend_features.get("category")
             legend_contour_feature = {
                 "type": "Feature",
-                "geometry": legend_features.get("px_geojson"),
+                "geometry": inverse_geojson(legend_features.get("px_geojson")),
                 "properties": {
                     "legend_id": legend_features.get("legend_id", ""),
                     "category": category,
@@ -159,7 +159,7 @@ class CDRClient:
             self.set_latest_projection_id(result)
             feature = {
                 "type": "Feature",
-                "geometry": result["px_geojson"],
+                "geometry": inverse_geojson(result["px_geojson"]),
                 "properties": return_properties(legend_features, result),
             }
             pixel_features.append(feature)
@@ -269,7 +269,8 @@ class CDRClient:
     def download_cog(self, cog_id):
         r = httpx.get(f"{self.cog_url}/cogs/{cog_id}.cog.tif")
         Path(self.output_dir + "/" + cog_id + "/pixel").mkdir(parents=True, exist_ok=True)
-        open(f"{self.output_dir}/{cog_id}/pixel/{cog_id}.cog.tif", "wb").write(r.content)
+        # open(f"{self.output_dir}/{cog_id}/pixel/{cog_id}.cog.tif", "wb").write(r.content)
+        save_stripped_file(r.content, f"{self.output_dir}/{cog_id}/pixel/{cog_id}.cog.tif")
 
     def download_projected_and_pixel_cog(self, cog_id):
         self.download_cog(cog_id=cog_id)

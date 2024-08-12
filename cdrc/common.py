@@ -1,5 +1,39 @@
 import hashlib
 
+from wand.image import Image as wandImage
+
+
+def save_stripped_file(file_contents, output_path):
+    with wandImage(blob=file_contents) as img:
+        img.strip()
+        img.save(filename=output_path)
+
+
+def inverse_geojson(geojson):
+    if geojson is None:
+        return None
+    geom_type = geojson["type"]
+
+    def transform_coord(coord):
+        return [coord[0], -coord[1]]
+
+    if geom_type == "Point":
+        geojson["coordinates"] = transform_coord(geojson["coordinates"])
+    elif geom_type in ["LineString", "MultiPoint"]:
+        geojson["coordinates"] = [transform_coord(coord) for coord in geojson["coordinates"]]
+    elif geom_type in ["Polygon", "MultiLineString"]:
+        geojson["coordinates"] = [[transform_coord(coord) for coord in ring] for ring in geojson["coordinates"]]
+    elif geom_type == "MultiPolygon":
+        geojson["coordinates"] = [
+            [[transform_coord(coord) for coord in ring] for ring in polygon] for polygon in geojson["coordinates"]
+        ]
+    elif geom_type == "GeometryCollection":
+        for geometry in geojson["geometries"]:
+            inverse_geojson(geometry)
+    else:
+        raise ValueError(f"Unsupported geometry type: {geom_type}")
+    return geojson
+
 
 def get_projection_id(feature):
     if feature.get("projected_feature"):
