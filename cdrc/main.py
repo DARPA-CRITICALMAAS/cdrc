@@ -67,7 +67,7 @@ class CDRClient:
             "legend_ids": [],
             "intersect_polygon": intersect_polygon,
             "page": 0,
-            "size": 5000,
+            "size": 100000,
         }
         validated_payload = FeatureSearchIntersect(**payload).model_dump()
         all_data = []
