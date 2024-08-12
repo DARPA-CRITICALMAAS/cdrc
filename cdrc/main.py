@@ -125,6 +125,8 @@ class CDRClient:
             if thing == "__":
                 thing = legend_features.get("description", "")[:20]
                 thing = re.sub(r"\s+", "", thing).lower()
+            thing = thing.replace("\\","")
+            thing = thing.replace("/","")           
 
             with open(
                 os.path.join(
@@ -180,6 +182,8 @@ class CDRClient:
         if thing == "__":
             thing = description[:20]
             thing = re.sub(r"\s+", "", thing).lower()
+        thing = thing.replace("\\","")
+        thing = thing.replace("/","")
 
         with open(
             os.path.join(
