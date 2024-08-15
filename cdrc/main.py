@@ -37,7 +37,7 @@ class CDRClient:
         validated_payload["feature_types"] = [ft.value for ft in validated_payload["feature_types"]]
         all_data = []
         while True:
-            print(f"collecting records from cdr:  current amount {len(all_data)} records")
+            print(f"collecting records from cdr:  current amount {len(all_data)} legend items")
             response = self.client.post(
                 f"{self.base_url}/features/{cog_id}", json=validated_payload, headers=self.headers
             )
