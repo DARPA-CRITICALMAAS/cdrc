@@ -9,6 +9,8 @@ import httpx
 
 from cdrc.common import get_projection_id, inverse_geojson, return_properties, save_stripped_file
 from cdrc.schemas import FeatureSearchByCog, FeatureSearchIntersect
+import warnings
+warnings.filterwarnings("ignore")
 
 
 class CDRClient:
@@ -37,7 +39,6 @@ class CDRClient:
         validated_payload["feature_types"] = [ft.value for ft in validated_payload["feature_types"]]
         all_data = []
         while True:
-            print(f"collecting records from cdr:  current amount {len(all_data)} legend items")
             response = self.client.post(
                 f"{self.base_url}/features/{cog_id}", json=validated_payload, headers=self.headers
             )
@@ -47,11 +48,11 @@ class CDRClient:
                 break
             data = response.json()
             if not data:
-                print("Finished collecting features")
                 break
 
             all_data.extend(data)
             validated_payload["page"] = validated_payload["page"] + 1
+            print(f"{len(all_data)} legend items downloded...")
 
         return all_data
 
@@ -72,7 +73,6 @@ class CDRClient:
         validated_payload = FeatureSearchIntersect(**payload).model_dump()
         all_data = []
         while True:
-            print(f"collecting records from cdr:  current amount {len(all_data)} records")
             response = self.client.post(
                 f"{self.base_url}/features/intersect", json=validated_payload, headers=self.headers
             )
@@ -81,13 +81,12 @@ class CDRClient:
                 print("There was an error connecting to the cdr.")
                 break
             data = response.json()
-            # print(f"{data[0]}")
             if not data:
-                print("Finished collecting features")
                 break
 
             all_data.extend(data)
             validated_payload["page"] = validated_payload["page"] + 1
+            print(f"{len(all_data)} legend items downloded...")
 
         return all_data
 
@@ -98,6 +97,7 @@ class CDRClient:
             label = legend_features.get("label")
             abbreviation = legend_features.get("abbreviation")
             category = legend_features.get("category")
+            cog_id = legend_features.get("cog_id")
             legend_contour_feature = {
                 "type": "Feature",
                 "geometry": inverse_geojson(legend_features.get("px_geojson")),
@@ -125,13 +125,14 @@ class CDRClient:
             if thing == "__":
                 thing = legend_features.get("description", "")[:20]
                 thing = re.sub(r"\s+", "", thing).lower()
-            thing = thing.replace("\\","")
-            thing = thing.replace("/","")           
+            thing = thing.replace("\\", "")
+            thing = thing.replace("/", "")
+            thing = thing.replace(";", "")
 
             with open(
                 os.path.join(
                     output_dir + "/pixel",
-                    f"{system}__{system_version}__{thing}_{category}_legend_contour.geojson",
+                    f"{cog_id}__{system}__{system_version}__{thing}_{category}_legend_contour.geojson",
                 ),
                 "w",
             ) as out:
@@ -152,10 +153,10 @@ class CDRClient:
         abbreviation = legend_features.get("abbreviation", "")
         category = legend_features.get("category")
         description = legend_features.get("description", "")
+        cog_id = legend_features.get("cog_id")
 
         pixel_features = []
         geom_features = []
-        print(f"Starting process for {category} extractions. {len(legend_features.get(f'{category}_extractions',[]))}")
 
         for result in legend_features.get(f"{category}_extractions", []):
             self.set_latest_projection_id(result)
@@ -173,7 +174,7 @@ class CDRClient:
                 }
                 geom_features.append(geom_feature)
             else:
-                print("Feature is not georeferenced in the cdr")
+                pass
 
         px_obj = {"type": "FeatureCollection", "features": pixel_features}
         thing = label[:20] + "__" + abbreviation[:20]
@@ -182,13 +183,14 @@ class CDRClient:
         if thing == "__":
             thing = description[:20]
             thing = re.sub(r"\s+", "", thing).lower()
-        thing = thing.replace("\\","")
-        thing = thing.replace("/","")
+        thing = thing.replace("\\", "")
+        thing = thing.replace("/", "")
+        thing = thing.replace(";", "")
 
         with open(
             os.path.join(
                 output_dir + "/pixel",
-                f"{system}__{system_version}__{thing}_{category}_features.geojson",
+                f"{cog_id}__{system}__{system_version}__{thing}_{category}_features.geojson",
             ),
             "w",
         ) as out:
@@ -203,29 +205,32 @@ class CDRClient:
             vector.to_file(
                 os.path.join(
                     output_dir + "/projected",
-                    f"{system}__{system_version}__{thing}_{category}_features.gpkg",
+                    f"{cog_id}__{system}__{system_version}__{thing}_{category}_features.gpkg",
                 ),
                 driver="GPKG",
             )
 
     def build_cog_geopackages(self, cog_id, feature_types, system_versions, validated):
-        print("Starting to build geopackage")
+        print("Querying the CDR...")
 
         legend_items = self.features_search(cog_id, feature_types, system_versions, validated)
-        print("Finished getting legend items and features")
         if not legend_items:
-            print("CDR didn't return any features for this search returned")
+            print(f"Querying the CDR Complete!\n0 legend items and associated features downloaded")
             return
+        else:
+            print(f"Querying the CDR Complete!\n{len(legend_items)} legend items and associated features downloaded.")
+
         Path(self.output_dir + "/" + cog_id + "/pixel").mkdir(parents=True, exist_ok=True)
         Path(self.output_dir + "/" + cog_id + "/projected").mkdir(parents=True, exist_ok=True)
 
+        print("Converting JSONs to Geopackages...")
         for legend_item in legend_items:
             self.legend_builder(legend_item, self.output_dir + f"/{legend_item.get('cog_id')}")
-
             self.legend_feature_builder(legend_item, self.output_dir + f"/{legend_item.get('cog_id')}")
 
-        print("Downloading cog and projected cog")
+        print("Downloading pixel space and projected COGs...")
         self.download_projected_and_pixel_cog(cog_id=cog_id)
+        print(f"Done!\nCheck this directory for a folder named '{cog_id}'")
 
     def build_cma_geopackages(
         self,
@@ -238,17 +243,21 @@ class CDRClient:
         cma_name: str = "",
     ):
         if cma_name == "":
-            print("Provide a cma name to be the folder name output for geopackes.")
+            print("Please provide a 'cma_name' to be the folder name output for geopackes.")
             return
 
         if intersect_polygon:
             Path(self.output_dir + "/" + cma_name + "/projected").mkdir(parents=True, exist_ok=True)
-            with open(self.output_dir + "/" + cma_name + "/projected/intersect_polygon.geojson", "w") as f:
-                json.dump(intersect_polygon, f)
+            # with open(self.output_dir + "/" + cma_name + "/projected/intersect_polygon.geojson", "w") as f:
+            #     json.dump(intersect_polygon, f)
+
+        print("Querying the CDR...")
 
         feature_items = self.features_intersect_search(
             cog_ids, feature_type, system_versions, validated, search_text, intersect_polygon
         )
+        print(f"Querying the CDR Complete!\n{len(feature_items)} legend items and associated features downloaded.")
+
         legend_items = {}
         for feature in feature_items:
             legend_item_ = feature.get("legend_item") or {}
@@ -258,20 +267,21 @@ class CDRClient:
 
             legend_items[legend_item_.get("legend_id", "")][f"{feature_type}_extractions"].append(feature)
 
-        print("Finished getting legend items and features")
         if not legend_items.values():
             print("CDR didn't return any features for this search returned")
             return
+
         Path(self.output_dir + "/" + cma_name + "/pixel").mkdir(parents=True, exist_ok=True)
         Path(self.output_dir + "/" + cma_name + "/projected").mkdir(parents=True, exist_ok=True)
 
+        print("Converting JSONs to Geopackages...")
         for legend_item in legend_items.values():
             self.legend_builder(legend_item, self.output_dir + f"/{cma_name}")
-
             self.legend_feature_builder(legend_item, self.output_dir + f"/{cma_name}")
+        print(f"Done!\nCheck this directory for a folder named '{cma_name}'")
 
     def download_cog(self, cog_id):
-        r = httpx.get(f"{self.cog_url}/cogs/{cog_id}.cog.tif")
+        r = httpx.get(f"{self.cog_url}/cogs/{cog_id}.cog.tif", timeout=None)
         Path(self.output_dir + "/" + cog_id + "/pixel").mkdir(parents=True, exist_ok=True)
         # open(f"{self.output_dir}/{cog_id}/pixel/{cog_id}.cog.tif", "wb").write(r.content)
         save_stripped_file(r.content, f"{self.output_dir}/{cog_id}/pixel/{cog_id}.cog.tif")
@@ -293,8 +303,8 @@ class CDRClient:
                     url_ = self.cog_url + quote(
                         f"/test/cogs/{cog_id}/{data.get('system')}/{data.get('system_version')}/{self.projection_id}"
                     )
-                    r = httpx.get(url_)
+                    r = httpx.get(url_, timeout=None)
                     if r.status_code != 200:
                         print(r.status_code)
                         return
-                    open(f"{self.output_dir}/{cog_id}/projected/{self.projection_id}", "wb").write(r.content)
+                    open(f"{self.output_dir}/{cog_id}/projected/{cog_id}.projected.cog.tif", "wb").write(r.content)
