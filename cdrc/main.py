@@ -40,7 +40,7 @@ class CDRClient:
         all_data = []
         while True:
             response = self.client.post(
-                f"{self.base_url}/features/{cog_id}", json=validated_payload, headers=self.headers
+                f"{self.base_url}/features/{cog_id}", json=validated_payload, headers=self.headers, timeout=None
             )
             if response.status_code != 200:
                 print(response.text)
@@ -74,7 +74,7 @@ class CDRClient:
         all_data = []
         while True:
             response = self.client.post(
-                f"{self.base_url}/features/intersect", json=validated_payload, headers=self.headers
+                f"{self.base_url}/features/intersect", json=validated_payload, headers=self.headers, timeout=None
             )
             if response.status_code != 200:
                 print(response.text)
@@ -210,7 +210,7 @@ class CDRClient:
                 driver="GPKG",
             )
 
-    def build_cog_geopackages(self, cog_id, feature_types, system_versions, validated):
+    def build_cog_geopackages(self, cog_id, feature_types, system_versions, validated, rasters=True):
         print("Querying the CDR...")
 
         legend_items = self.features_search(cog_id, feature_types, system_versions, validated)
@@ -228,8 +228,9 @@ class CDRClient:
             self.legend_builder(legend_item, self.output_dir + f"/{legend_item.get('cog_id')}")
             self.legend_feature_builder(legend_item, self.output_dir + f"/{legend_item.get('cog_id')}")
 
-        print("Downloading pixel space and projected COGs...")
-        self.download_projected_and_pixel_cog(cog_id=cog_id)
+        if rasters:
+            print("Downloading pixel space and projected COGs...")
+            self.download_projected_and_pixel_cog(cog_id=cog_id)
         print(f"Done!\nCheck this directory for a folder named '{cog_id}'")
 
     def build_cma_geopackages(
@@ -293,7 +294,7 @@ class CDRClient:
 
             encoded_url_path = quote(path)
 
-            resp = self.client.get(self.base_url + encoded_url_path, headers=self.headers)
+            resp = self.client.get(self.base_url + encoded_url_path, headers=self.headers, timeout=None)
             if resp.status_code == 403 or resp.status_code == 404:
                 print("Unable to find projection.")
                 return
