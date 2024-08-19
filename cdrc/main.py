@@ -57,13 +57,14 @@ class CDRClient:
         return all_data
 
     def features_intersect_search(
-        self, cog_ids, feature_type, system_versions, validated, search_text, intersect_polygon
+        self, cog_ids, feature_type, system_versions, validated, search_text, intersect_polygon, search_terms
     ):
         payload = {
             "cog_ids": cog_ids,
             "category": feature_type,
             "system_versions": system_versions,
             "search_text": search_text,
+            "search_terms": search_terms,
             "validated": validated,
             "legend_ids": [],
             "intersect_polygon": intersect_polygon,
@@ -242,6 +243,7 @@ class CDRClient:
         search_text,
         intersect_polygon,
         cma_name: str = "",
+        search_terms: list = []
     ):
         if cma_name == "":
             print("Please provide a 'cma_name' to be the folder name output for geopackes.")
@@ -255,7 +257,7 @@ class CDRClient:
         print("Querying the CDR...")
 
         feature_items = self.features_intersect_search(
-            cog_ids, feature_type, system_versions, validated, search_text, intersect_polygon
+            cog_ids, feature_type, system_versions, validated, search_text, intersect_polygon, search_terms
         )
         print(f"Querying the CDR Complete!\n{len(feature_items)} legend items and associated features downloaded.")
 
