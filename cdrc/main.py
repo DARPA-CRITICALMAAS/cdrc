@@ -87,7 +87,7 @@ class CDRClient:
 
             all_data.extend(data)
             validated_payload["page"] = validated_payload["page"] + 1
-            print(f"{len(all_data)} legend items downloded...")
+            print(f"{len(all_data)} features downloded...")
 
         return all_data
 
@@ -259,7 +259,7 @@ class CDRClient:
         feature_items = self.features_intersect_search(
             cog_ids, feature_type, system_versions, validated, search_text, intersect_polygon, search_terms
         )
-        print(f"Querying the CDR Complete!\n{len(feature_items)} legend items and associated features downloaded.")
+        print(f"Querying the CDR Complete!\n{len(feature_items)} features downloaded.")
 
         legend_items = {}
         for feature in feature_items:

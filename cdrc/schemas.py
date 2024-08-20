@@ -47,6 +47,8 @@ class FeatureSearch(BaseModel):
         default_factory=list, description="List of system and system version pairs"
     )
     search_text: Optional[str] = Field(default=None, description="String text to search for in legend descriptions")
+    search_terms: Optional[List[str]] = Field(
+        default_factory=list, description="String texts to search for in legend descriptions")
     validated: Optional[bool] = True
     legend_ids: Optional[List[str]] = Field(
         default_factory=list, description="List of legend ids to filter on if known"
